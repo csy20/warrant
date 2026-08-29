@@ -52,6 +52,8 @@ export interface Change {
   summary: string;
   payload: Record<string, unknown>;
   rollback: string;
+  applied_justification?: string;
+  rollback_justification?: string;
 }
 
 export interface Page {
