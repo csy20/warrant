@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import {
@@ -68,4 +71,14 @@ test("validateCatalog rejects a missing required change", () => {
   const broken = structuredClone(catalog) as Catalog;
   broken.changes = broken.changes.filter((c) => c.id !== "CHG-1042");
   assert.throws(() => validateCatalog(broken), /CHG-1042/);
+});
+
+test("loadCatalog rejects malformed JSON objects", () => {
+  const dir = mkdtempSync(join(tmpdir(), "warrant-"));
+  const empty = join(dir, "empty.json");
+  writeFileSync(empty, "{}");
+  assert.throws(() => loadCatalog(empty), CatalogError);
+  const invalid = join(dir, "bad.json");
+  writeFileSync(invalid, "not-json");
+  assert.throws(() => loadCatalog(invalid), CatalogError);
 });

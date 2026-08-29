@@ -26,14 +26,19 @@ Clear CHG-1042 for production. Investigate first. Do not apply until I approve.
 
 ## Run it
 
-### 1. Catalog MCP
+Until the stacked PRs are merged to `main` (Qodo first), clone the working tip:
 
 ```bash
 git clone https://github.com/csy20/warrant.git
 cd warrant
+git checkout docs/readme
 npm install
+npm test
+npm run smoke
 npm start
 ```
+
+`npm run smoke` drives the MCP the way TrueForge will: read CHG-1042, run the sandbox analyzer (expects **NO-GO**), apply, confirm `checkout-v2` flipped, roll back. No model key required.
 
 Health check: `http://127.0.0.1:8765/health`  
 MCP: `http://127.0.0.1:8765/mcp`
@@ -59,6 +64,7 @@ Open [http://localhost:8790](http://localhost:8790).
 3. **Settings → Skills → Import from GitHub**
    - Repository: `https://github.com/csy20/warrant`
    - Path: `skills/change-clearance`
+   - Ref: `docs/readme` (use `main` after those PRs merge)
    - Name: `change-clearance`
 4. **Settings → Sandbox providers** — configure Daytona, then enable sandbox on the agent.
 5. Create the agent from [`agent.json`](./agent.json):
@@ -100,6 +106,7 @@ State lives in the MCP process memory. Restarting `npm start` resets the catalog
 ```bash
 npm test
 npm run typecheck
+npm run smoke
 ```
 
 CI runs both on every pull request (Node 22, Python 3.12 for the reference analyzer).
@@ -115,7 +122,8 @@ Stacked work:
 3. [#8](https://github.com/csy20/warrant/pull/8) MCP server (representative product PR)
 4. [#9](https://github.com/csy20/warrant/pull/9) agent spec + skill
 5. [#10](https://github.com/csy20/warrant/pull/10) CI
-6. This README
+6. [#11](https://github.com/csy20/warrant/pull/11) README
+7. Hardening + `npm run smoke` (this branch, `fix/harden-mcp`)
 
 ## Qodo Code Review Evidence
 

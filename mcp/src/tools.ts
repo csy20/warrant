@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { CatalogError } from "./catalog.ts";
 import type { CatalogStore } from "./store.ts";
-import type { Severity } from "./types.ts";
 
 export const READ_TOOL_NAMES = [
   "list_pending_changes",
@@ -202,12 +201,6 @@ export function registerCatalogTools(
       annotations: destructiveAnnotations,
     },
     ({ service, severity, message }) =>
-      run(() =>
-        store.pageOncall({
-          service,
-          severity: severity as Severity,
-          message,
-        }),
-      ),
+      run(() => store.pageOncall({ service, severity, message })),
   );
 }
