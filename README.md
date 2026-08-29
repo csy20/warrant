@@ -26,12 +26,11 @@ Clear CHG-1042 for production. Investigate first. Do not apply until I approve.
 
 ## Run it
 
-Until the stacked PRs are merged to `main` (Qodo first), clone the working tip:
+Until the stacked PRs are merged to `main` (Qodo first), the GitHub default branch is the working tip (`fix/harden-mcp`). Clone as usual:
 
 ```bash
 git clone https://github.com/csy20/warrant.git
 cd warrant
-git checkout docs/readme
 npm install
 npm test
 npm run smoke
@@ -64,7 +63,7 @@ Open [http://localhost:8790](http://localhost:8790).
 3. **Settings → Skills → Import from GitHub**
    - Repository: `https://github.com/csy20/warrant`
    - Path: `skills/change-clearance`
-   - Ref: `docs/readme` (use `main` after those PRs merge)
+   - Ref: `fix/harden-mcp` (use `main` after those PRs merge)
    - Name: `change-clearance`
 4. **Settings → Sandbox providers** — configure Daytona, then enable sandbox on the agent.
 5. Create the agent from [`agent.json`](./agent.json):
@@ -123,7 +122,7 @@ Stacked work:
 4. [#9](https://github.com/csy20/warrant/pull/9) agent spec + skill
 5. [#10](https://github.com/csy20/warrant/pull/10) CI
 6. [#11](https://github.com/csy20/warrant/pull/11) README
-7. Hardening + `npm run smoke` (this branch, `fix/harden-mcp`)
+7. [#13](https://github.com/csy20/warrant/pull/13) hardening + `npm run smoke`
 
 ## Qodo Code Review Evidence
 
