@@ -1,0 +1,174 @@
+{
+  "company": "Northline",
+  "disclaimer": "Synthetic demo catalog. Nothing here is a real production system.",
+  "services": [
+    {
+      "name": "checkout-api",
+      "owner": "checkout",
+      "environment": "prod",
+      "replicas": 8,
+      "version": "3.2.0",
+      "traffic_pct": 40,
+      "description": "Session, cart, and order placement for Northline checkout."
+    },
+    {
+      "name": "payments-gateway",
+      "owner": "payments",
+      "environment": "prod",
+      "replicas": 6,
+      "version": "2.3.8",
+      "traffic_pct": 40,
+      "description": "Card and wallet authorization in the checkout path."
+    },
+    {
+      "name": "inventory-service",
+      "owner": "fulfillment",
+      "environment": "prod",
+      "replicas": 4,
+      "version": "1.9.1",
+      "traffic_pct": 15,
+      "description": "Stock reservations during checkout."
+    },
+    {
+      "name": "edge-cdn",
+      "owner": "platform",
+      "environment": "prod",
+      "replicas": 12,
+      "version": "0.8.4",
+      "traffic_pct": 5,
+      "description": "Static assets and edge cache. Not on the payment path."
+    }
+  ],
+  "flags": [
+    {
+      "name": "checkout-v2",
+      "service": "checkout-api",
+      "environment": "prod",
+      "enabled": false,
+      "rollout_pct": 0,
+      "description": "New checkout UI and pricing path. Currently off in production."
+    },
+    {
+      "name": "checkout-v2",
+      "service": "checkout-api",
+      "environment": "staging",
+      "enabled": true,
+      "rollout_pct": 100,
+      "description": "Staging has run checkout-v2 at 100% for 11 days."
+    },
+    {
+      "name": "wallet-retry",
+      "service": "payments-gateway",
+      "environment": "prod",
+      "enabled": true,
+      "rollout_pct": 25,
+      "description": "Retry wallet declines once. Partial prod rollout."
+    }
+  ],
+  "slos": [
+    {
+      "service": "checkout-api",
+      "name": "availability",
+      "target_pct": 99.9,
+      "current_pct": 99.94,
+      "window": "30d"
+    },
+    {
+      "service": "checkout-api",
+      "name": "checkout_success",
+      "target_pct": 98.5,
+      "current_pct": 98.71,
+      "window": "7d"
+    },
+    {
+      "service": "payments-gateway",
+      "name": "authorization_success",
+      "target_pct": 99.5,
+      "current_pct": 99.41,
+      "window": "7d"
+    },
+    {
+      "service": "inventory-service",
+      "name": "reservation_success",
+      "target_pct": 99.0,
+      "current_pct": 99.62,
+      "window": "7d"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "INC-441",
+      "service": "checkout-api",
+      "opened_at": "2026-08-12T14:08:00Z",
+      "resolved_at": "2026-08-12T16:40:00Z",
+      "severity": "sev2",
+      "summary": "checkout-v2 canary at 5% raised latency; flag rolled back to 0%."
+    },
+    {
+      "id": "INC-438",
+      "service": "payments-gateway",
+      "opened_at": "2026-08-03T09:12:00Z",
+      "resolved_at": "2026-08-03T11:01:00Z",
+      "severity": "sev2",
+      "summary": "Issuer timeout spike during 2.3.7 deploy; retry budget exhausted."
+    },
+    {
+      "id": "INC-429",
+      "service": "inventory-service",
+      "opened_at": "2026-07-21T18:44:00Z",
+      "resolved_at": "2026-07-21T19:10:00Z",
+      "severity": "sev3",
+      "summary": "Replica count dropped to 2 during an autoscaler glitch; reservations queued."
+    }
+  ],
+  "changes": [
+    {
+      "id": "CHG-1042",
+      "kind": "feature_flag",
+      "title": "Enable checkout-v2 in production at 100%",
+      "service": "checkout-api",
+      "environment": "prod",
+      "status": "pending",
+      "risk": "high",
+      "requested_by": "checkout-oncall",
+      "summary": "Turn on the checkout-v2 flag for all production traffic. Staging has been at 100% for 11 days. Last prod canary (INC-441) was rolled back.",
+      "payload": {
+        "flag": "checkout-v2",
+        "enabled": true,
+        "rollout_pct": 100
+      },
+      "rollback": "Set checkout-v2 enabled=false and rollout_pct=0 in prod."
+    },
+    {
+      "id": "CHG-1043",
+      "kind": "deploy",
+      "title": "Deploy payments-gateway 2.4.1",
+      "service": "payments-gateway",
+      "environment": "prod",
+      "status": "pending",
+      "risk": "medium",
+      "requested_by": "payments-oncall",
+      "summary": "Roll 2.4.1 to production. Changelog: issuer timeout budget +10%, no schema change. Authorization SLO is currently 0.09pt under target.",
+      "payload": {
+        "version": "2.4.1"
+      },
+      "rollback": "Redeploy payments-gateway 2.3.8."
+    },
+    {
+      "id": "CHG-1044",
+      "kind": "scale",
+      "title": "Scale inventory-service to 12 replicas",
+      "service": "inventory-service",
+      "environment": "prod",
+      "status": "pending",
+      "risk": "low",
+      "requested_by": "fulfillment-oncall",
+      "summary": "Raise replica count from 4 to 12 ahead of a marketing campaign. No binary change.",
+      "payload": {
+        "replicas": 12
+      },
+      "rollback": "Set inventory-service replicas back to 4."
+    }
+  ],
+  "pages": []
+}
