@@ -1,0 +1,26 @@
+{
+  "name": "warrant",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TrueForge change-control agent: MCP catalog, sandboxed analysis, human approval before irreversible changes.",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "scripts": {
+    "start": "tsx mcp/src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.18.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "express": "^5.2.1",
+    "zod": "^4.5.2"
+  }
+}
