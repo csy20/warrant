@@ -1,0 +1,29 @@
+# Local hackathon brief — constraint source, never ship
+HACKATHON.md
+
+# Dependencies and build
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# TrueForge local data if someone points SQLITE_PATH here
+*.sqlite
+*.sqlite-journal
