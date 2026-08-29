@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "tsx mcp/src/server.ts",
+    "smoke": "tsx scripts/smoke.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/**/*.test.ts"
   },

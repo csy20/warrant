@@ -13,5 +13,5 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
-  "include": ["mcp/**/*.ts", "tests/**/*.ts"]
+  "include": ["mcp/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
 }

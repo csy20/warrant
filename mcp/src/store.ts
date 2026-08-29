@@ -1,12 +1,12 @@
-import { loadCatalog } from "./catalog.ts";
-import { CatalogError } from "./catalog.ts";
 import {
+  CatalogError,
   getChange,
   getFlag,
   getService,
   getSlo,
   listPendingChanges,
   listRecentIncidents,
+  loadCatalog,
 } from "./catalog.ts";
 import type {
   Catalog,
@@ -33,6 +33,23 @@ function asNumber(value: unknown, field: string): number {
     throw new CatalogError(`expected ${field} to be a number`);
   }
   return value;
+}
+
+function asNonNegativeInt(value: unknown, field: string): number {
+  const n = asNumber(value, field);
+  if (!Number.isInteger(n) || n < 0) {
+    throw new CatalogError(`expected ${field} to be a non-negative integer`);
+  }
+  return n;
+}
+
+const SEVERITIES: readonly Severity[] = ["sev1", "sev2", "sev3"];
+
+function asSeverity(value: string): Severity {
+  if ((SEVERITIES as readonly string[]).includes(value)) {
+    return value as Severity;
+  }
+  throw new CatalogError(`unknown severity: ${value}`);
 }
 
 function asBoolean(value: unknown, field: string): boolean {
@@ -118,10 +135,11 @@ export class CatalogStore {
 
   pageOncall(input: {
     service: string;
-    severity: Severity;
+    severity: string;
     message: string;
   }): Page {
     getService(this.catalog, input.service);
+    const severity = asSeverity(input.severity);
     if (!input.message.trim()) {
       throw new CatalogError("page message is required");
     }
@@ -129,7 +147,7 @@ export class CatalogStore {
     const page: Page = {
       id: `PAGE-${String(this.pageSeq).padStart(3, "0")}`,
       service: input.service,
-      severity: input.severity,
+      severity,
       message: input.message.trim(),
       created_at: new Date().toISOString(),
     };
@@ -155,10 +173,13 @@ export class CatalogStore {
       const flagName = asString(change.payload.flag, "payload.flag");
       const flag = getFlag(this.catalog, flagName, change.environment);
       flag.enabled = asBoolean(change.payload.enabled, "payload.enabled");
-      flag.rollout_pct = asNumber(
+      flag.rollout_pct = asNonNegativeInt(
         change.payload.rollout_pct,
         "payload.rollout_pct",
       );
+      if (flag.rollout_pct > 100) {
+        throw new CatalogError("payload.rollout_pct must be 0-100");
+      }
       return;
     }
     const service = getService(this.catalog, change.service);
@@ -166,7 +187,10 @@ export class CatalogStore {
       service.version = asString(change.payload.version, "payload.version");
       return;
     }
-    service.replicas = asNumber(change.payload.replicas, "payload.replicas");
+    service.replicas = asNonNegativeInt(
+      change.payload.replicas,
+      "payload.replicas",
+    );
   }
 
   private restore(change: Change, previous: PreviousState): void {
@@ -174,7 +198,7 @@ export class CatalogStore {
       const flagName = asString(change.payload.flag, "payload.flag");
       const flag = getFlag(this.catalog, flagName, change.environment);
       flag.enabled = asBoolean(previous.enabled, "previous.enabled");
-      flag.rollout_pct = asNumber(
+      flag.rollout_pct = asNonNegativeInt(
         previous.rollout_pct,
         "previous.rollout_pct",
       );
@@ -185,6 +209,9 @@ export class CatalogStore {
       service.version = asString(previous.version, "previous.version");
       return;
     }
-    service.replicas = asNumber(previous.replicas, "previous.replicas");
+    service.replicas = asNonNegativeInt(
+      previous.replicas,
+      "previous.replicas",
+    );
   }
 }

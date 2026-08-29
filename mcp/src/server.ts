@@ -34,14 +34,18 @@ export function createApp(store: CatalogStore = createStore()) {
   });
 
   app.get("/health", (_req, res) => {
+    const snap = store.snapshot();
     res.json({
       ok: true,
       name: SERVER_NAME,
       tools: ALL_TOOL_NAMES.length,
+      pending: snap.changes.filter((c) => c.status === "pending").length,
+      applied: snap.changes.filter((c) => c.status === "applied").length,
+      pages: snap.pages.length,
     });
   });
 
-  app.post("/mcp", async (req, res) => {
+  const handleMcp: express.RequestHandler = async (req, res) => {
     try {
       const server = buildMcpServer(store);
       const transport = new StreamableHTTPServerTransport({
@@ -52,7 +56,11 @@ export function createApp(store: CatalogStore = createStore()) {
         void server.close();
       });
       await server.connect(transport);
-      await transport.handleRequest(req, res, req.body);
+      await transport.handleRequest(
+        req,
+        res,
+        req.method === "POST" ? req.body : undefined,
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[${SERVER_NAME}] request failed:`, message);
@@ -64,7 +72,11 @@ export function createApp(store: CatalogStore = createStore()) {
         });
       }
     }
-  });
+  };
+
+  app.post("/mcp", handleMcp);
+  app.get("/mcp", handleMcp);
+  app.delete("/mcp", handleMcp);
 
   return app;
 }
